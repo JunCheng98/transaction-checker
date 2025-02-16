@@ -51,6 +51,7 @@ async function fetchAndProcessTransactions() {
             const feeInUsdt = await calculateTransactionFee(tx);
             if (feeInUsdt !== null) {
                 const transactionData = {
+                    id: tx.blockNumber,
                     timestamp: tx.timeStamp,
                     hash: tx.hash,
                     feeInUsdt: feeInUsdt,
