@@ -7,14 +7,15 @@ const MAX_PAGE_NUM = 100;
 
 let transactions = [];
 let currentBlock = 0;
+let currentEthUsdtPrice = getEthUsdtPrice()
 
 // data format: [timestamp, open_price, high_price, low_price, ...]
 // we fetch the open price for the given timestamp (first element is at that timestamp)
-async function getEthUsdtPrice(startTs) {
-  const binance_kline_api = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1s&startTime=${startTs}`
+async function getEthUsdtPrice() {
+  const binance_kline_api = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1s`
   try {
     const response = await axios.get(binance_kline_api);
-    return response.data[0][1];
+    return response.data[response.data.length - 1][1];
   } catch (error) {
     console.error("Error fetching ETH/USDT price:", error);
     return null;
@@ -28,10 +29,7 @@ async function calculateTransactionFee(tx) {
   const feeInWei = gasUsed * gasPrice;
   const feeInEth = feeInWei / 1e18; // convert wei to ETH
 
-  const ethUsdtPrice = await getEthUsdtPrice(tx.timeStamp);
-  if (!ethUsdtPrice) return null;
-
-  return feeInEth * ethUsdtPrice;
+  return feeInEth * currentEthUsdtPrice;
 }
 
 async function fetchAndProcessTransactions() {
@@ -57,7 +55,6 @@ async function fetchAndProcessTransactions() {
                     feeInUsdt: feeInUsdt,
                 };
                 transactions.push(transactionData);
-                console.log("Processed transaction:", transactionData);
             }
         }
     }
